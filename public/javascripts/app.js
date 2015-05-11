@@ -2,7 +2,9 @@ $(document).on(
 		'ready page:load',
 		function() {
 
+			var geojsonFormat = new ol.format.GeoJSON();
 			var geojson = new ol.source.Vector();
+			var heatmap = new ol.source.Vector();
 
 			function update() {
 				$.ajax({
@@ -12,13 +14,24 @@ $(document).on(
 					data : $.now()
 				}).done(function(response) {
 					geojson.clear();
-					var geojsonFormat = new ol.format.GeoJSON();
 					var features = geojsonFormat.readFeatures(response, {
 						featureProjection : 'EPSG:3857'
 					});
 					geojson.addFeatures(features);
 				});
-				setTimeout(update, 1000);
+				$.ajax({
+					url : '/heatmap.json?time=' + $.now(),
+					dataType : 'json',
+					type : 'get',
+					data : $.now()
+				}).done(function(response) {
+					heatmap.clear();
+					var features = geojsonFormat.readFeatures(response, {
+						featureProjection : 'EPSG:3857'
+					});
+					heatmap.addFeatures(features);
+				});
+				setTimeout(update, 5000);
 			}
 
 			var style = {
@@ -48,24 +61,36 @@ $(document).on(
 				}) ]
 			};
 
+			var rasterLayer = new ol.layer.Tile({
+				source : new ol.source.Stamen({
+					layer : 'toner-lite'
+				})
+			});
+			// var raster = new ol.layer.Tile({
+			// source : new ol.source.OSM()
+			// });
+			var heatmapLayer = new ol.layer.Heatmap({
+				source : heatmap,
+				opacity : 0.2,
+				visible: false
+			});
+			var geoLayer = new ol.layer.Vector({
+				source : geojson,
+				style : function(feature, resolution) {
+					return style[feature.getGeometry().getType()];
+				}
+			});
+
 			// Create the map
 			var map = new ol.Map({
 				target : document.getElementById('map'),
 				renderer : 'canvas', // Force the renderer to be used
-				layers : [
 				// Add a new Tile layer getting tiles from OpenStreetMap source
-				new ol.layer.Tile({
-					source : new ol.source.OSM()
-				}), new ol.layer.Vector({
-					source : geojson,
-					style : function(feature, resolution) {
-						return style[feature.getGeometry().getType()];
-					},
-				}) ],
+				layers : [ rasterLayer, heatmapLayer, geoLayer ],
 				view : new ol.View({
 					center : ol.proj.transform([ 6.050051, 50.781574 ],
 							'EPSG:4326', 'EPSG:3857'),
-					zoom : 8.5
+					zoom : 9
 				})
 			});
 
@@ -102,6 +127,14 @@ $(document).on(
 				displayFeatureInfo(evt.pixel);
 			});
 			
+			map.on('moveend', function(evt) {
+				if (map.getView().getZoom() > 7) {
+					heatmapLayer.setVisible(false);
+				} else {
+					heatmapLayer.setVisible(true);
+				}
+			}); 
+
 			update();
 
 		});
