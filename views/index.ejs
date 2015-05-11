@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title><%= title %></title>
+		<script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ol3/3.5.0/ol.css" type="text/css">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ol3/3.5.0/ol.js"></script>
+		<script src="/javascripts/app.js"></script>
+	</head>
+	<body>
+		<div class="container">
+			<div class="page-header">
+				<h1><%= title %></h1>
+			</div>
+			<div class="span12" style="position: relative;">
+				<div id="map" class="map"></div>
+				<div id="info" style="font-size: 1.14em; width: 12em; position: absolute; top: 0.5em; right: 0.5em; background: rgba(255,255,255,0.4); border-radius: 4px; border: 0px; padding: 2px">
+					<div style="margin: 1px; padding: 5px;  background: rgba(0, 60, 136, 0.5); border-radius: 2px; border: 0px; color: white;">
+						<div class="row">
+							<div class="col-md-6">
+								Name
+							</div>
+							<div class="col-md-6" id="name">
+								-
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-6">
+								Callsign
+							</div>
+							<div class="col-md-6" id="callsign">
+								-
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-6">
+								Alt
+							</div>
+							<div class="col-md-6" id="alt">
+								-
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-6">
+								SQW:
+							</div>
+							<div class="col-md-6" id="sqw">
+								-
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
