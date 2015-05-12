@@ -90,7 +90,7 @@ $(document).on(
 				view : new ol.View({
 					center : ol.proj.transform([ 6.050051, 50.781574 ],
 							'EPSG:4326', 'EPSG:3857'),
-					zoom : 9
+					zoom : 8
 				})
 			});
 
@@ -105,12 +105,14 @@ $(document).on(
 					$("#callsign").text(feature.get('callsign'));
 					$("#alt").text(feature.get('alt'));
 					$("#sqw").text(feature.get('sqw'));
+					$("#dist").text(Math.ceil(feature.get('dist')) + " km");
 					document.getElementById('map').style.cursor = 'pointer';
 				} else {
 					$("#name").text("-");
 					$("#callsign").text("-");
 					$("#alt").text("-");
 					$("#sqw").text("-");
+					$("#dist").text("-");
 					document.getElementById('map').style.cursor = '';
 				}
 			};
