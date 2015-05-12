@@ -86,7 +86,7 @@ $(document).on(
 				target : document.getElementById('map'),
 				renderer : 'canvas', // Force the renderer to be used
 				// Add a new Tile layer getting tiles from OpenStreetMap source
-				layers : [ rasterLayer, geoLayer, heatmapLayer ],
+				layers : [ rasterLayer, heatmapLayer, geoLayer ],
 				view : new ol.View({
 					center : ol.proj.transform([ 6.050051, 50.781574 ],
 							'EPSG:4326', 'EPSG:3857'),
