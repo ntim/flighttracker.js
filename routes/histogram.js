@@ -37,7 +37,7 @@ function Histogram2D(nx, xlow, xup, ny, ylow, yup) {
 
 Histogram2D.prototype._bin = function(x, nx, xlow, xup) {
 	var width = (xup - xlow) / nx;
-	var id = Math.ceil((x - xlow) / width);
+	var id = Math.floor((x - xlow) / width);
 	if (id < 0 || id >= nx) {
 		return undefined;
 	}
@@ -80,6 +80,16 @@ Histogram2D.prototype.center = function(id, coord) {
 
 Histogram2D.prototype.get = function(i, j) {
 	return this.arr[i][j];
+}
+
+Histogram2D.prototype.max = function() {
+	var m = 0.0;
+	for (var i = 0; i < this.nx; i++) {
+		for (var j = 0; j < this.ny; j++) {
+			m = Math.max(m, this.arr[i][j]);
+		}
+	}
+	return m;
 }
 
 // export the class

@@ -69,8 +69,8 @@ function update_flights_cache() {
 							callsign : el[16] || "N/A",
 							alt : el[4] + "ft",
 							sqw : el[6] || "N/A",
-							dist : distance(coordinates[1],
-									coordinates[0], lat, lon, 'K')
+							dist : Math.round(distance(coordinates[1],
+									coordinates[0], lat, lon, 'K'))
 					};
 					histogram.fill(coordinates[0], coordinates[1]);
 				}
@@ -125,6 +125,7 @@ router.get('/geo.json', function(req, res, next) {
 /* GET heatmap. */
 router.get('/heatmap.json', function(req, res, next) {
 	var features = [];
+	var max = histogram.max();
 	for (var i = 0; i < histogram.nx; i++) {
 		for (var j = 0; j < histogram.ny; j++) {
 			features.push({
@@ -134,7 +135,7 @@ router.get('/heatmap.json', function(req, res, next) {
 					coordinates : [histogram.center(i, 'x'), histogram.center(j, 'y')]
 				},
 				properties : {
-					weight: histogram.get(i, j)
+					weight: histogram.get(i, j) / max
 				}
 			});
 		}

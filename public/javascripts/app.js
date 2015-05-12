@@ -71,8 +71,8 @@ $(document).on(
 			// });
 			var heatmapLayer = new ol.layer.Heatmap({
 				source : heatmap,
-				opacity : 0.2,
-				visible: false
+				// opacity : 0.2,
+				visible : false
 			});
 			var geoLayer = new ol.layer.Vector({
 				source : geojson,
@@ -86,7 +86,7 @@ $(document).on(
 				target : document.getElementById('map'),
 				renderer : 'canvas', // Force the renderer to be used
 				// Add a new Tile layer getting tiles from OpenStreetMap source
-				layers : [ rasterLayer, heatmapLayer, geoLayer ],
+				layers : [ rasterLayer, geoLayer, heatmapLayer ],
 				view : new ol.View({
 					center : ol.proj.transform([ 6.050051, 50.781574 ],
 							'EPSG:4326', 'EPSG:3857'),
@@ -105,7 +105,9 @@ $(document).on(
 					$("#callsign").text(feature.get('callsign'));
 					$("#alt").text(feature.get('alt'));
 					$("#sqw").text(feature.get('sqw'));
-					$("#dist").text(Math.ceil(feature.get('dist')) + " km");
+					if (feature.get('dist') != undefined) {
+						$("#dist").text(feature.get('dist') + " km");
+					}
 					document.getElementById('map').style.cursor = 'pointer';
 				} else {
 					$("#name").text("-");
@@ -128,14 +130,14 @@ $(document).on(
 			map.on('click', function(evt) {
 				displayFeatureInfo(evt.pixel);
 			});
-			
+
 			map.on('moveend', function(evt) {
 				if (map.getView().getZoom() > 7) {
 					heatmapLayer.setVisible(false);
 				} else {
 					heatmapLayer.setVisible(true);
 				}
-			}); 
+			});
 
 			update();
 
