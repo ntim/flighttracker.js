@@ -4,7 +4,7 @@ var request = require('request');
 var later = require('later');
 var Histogram2D = require('./histogram.js');
 
-var flights = [];
+var cache = [];
 var lon = 6.050051;
 var lat = 50.781574;
 var histogram = new Histogram2D(32, 2, 12, 32, 48, 54);
@@ -32,48 +32,51 @@ function distance(lat1, lon1, lat2, lon2, unit) {
 	return dist
 }
 
-function update_flights_cache() {
-	request('http://lx3afamous02:8754/flights.json', function(error, response, body) {
+function update_aircrafts_cache() {
+	request('http://lx3afamous02:10000/data/aircraft.json', function(error, response, body) {
 		if (error) {
 			console.log(error);
 			return;
 		}
 		try {
 			var data = JSON.parse(body);
-			// Clear disappeared flights.
-			for ( var attr in flights) {
-				if (!(attr in data)) {
-					delete flights[attr];
-					console.log("Removing flight " + attr);
+			var aircrafts = data['aircraft'];
+			// Only accept valid data.
+			aircrafts = aircrafts.filter(function(aircraft) {
+				return 'lat' in aircraft && 'lon' in aircraft;
+			});
+			// Create lookup table.
+			var lookup = {};
+			aircrafts.forEach(function(aircraft) {
+				var hex = aircraft['hex'];
+				lookup[hex] = aircraft;
+			});
+			// Remove disappeared aircrafts.
+			for(var hex in cache) {
+				if(!(hex in lookup)) {
+					delete cache[hex];
+					console.log("Removing flight " + hex);
 				}
 			}
-			for ( var attr in data) {
-				var el = data[attr];
-				if (el[2] > 0 && el[1] > 1) {
-					var coordinates = [ el[2], el[1] ];
-					if (attr in flights) {
-						// Append coordinates to flight.
-						var prev = flights[attr]['coordinates'][flights[attr]['coordinates'].length - 1];
-						if (coordinates[0] != prev[0]
-						|| coordinates[1] != prev[1]) {
-							flights[attr]['coordinates'].push(coordinates);
-						}
-					} else {
-						console.log("Adding flight " + attr);
-						flights[attr] = {
-								coordinates : [ coordinates ]
-						};
-					}
-					flights[attr]['properties'] = {
-							name : el[0],
-							callsign : el[16] || "N/A",
-							alt : el[4] + "ft",
-							sqw : el[6] || "N/A",
-							dist : Math.round(distance(coordinates[1],
-									coordinates[0], lat, lon, 'K'))
+			// Add new aircrafts and update positions of existing aircrafts.
+			for(var hex in lookup) {
+				var coords = [ lookup[hex]['lon'], lookup[hex]['lat'] ];
+				if(!(hex in cache)) {
+					console.log("Adding flight " + hex);
+					cache[hex] = {
+							coordinates : [ coords ],
+							properties : lookup[hex]
 					};
-					histogram.fill(coordinates[0], coordinates[1]);
+					histogram.fill(coords[0], coords[1]);
+				} else {
+					var prev = cache[hex]['coordinates'][cache[hex]['coordinates'].length - 1];
+					if(prev[0] != coords[0] && prev[1] != coords[1]) {
+						console.log("Updating flight " + hex);
+						cache[hex]['coordinates'].push(coords);
+						histogram.fill(coords[0], coords[1]);
+					}
 				}
+				cache[hex]['properties']['distance'] = Math.ceil(distance(coords[1], coords[0], lat, lon));
 			}
 		} catch (error) {
 			console.log(error);
@@ -91,12 +94,12 @@ router.get('/', function(req, res, next) {
 /* GET geo locations. */
 router.get('/geo.json', function(req, res, next) {
 	var features = [];
-	for ( var attr in flights) {
-		var flight = flights[attr];
-		if (flight['coordinates'].length > 1) {
+	for ( var hex in cache) {
+		var aircraft = cache[hex];
+		if (aircraft['coordinates'].length > 1) {
 			var lineCoordinates = [];
-			for (var i = 1; i < flight['coordinates'].length; i++) {
-				lineCoordinates.push([flight['coordinates'][i - 1], flight['coordinates'][i] ]);
+			for (var i = 1; i < aircraft['coordinates'].length; i++) {
+				lineCoordinates.push([aircraft['coordinates'][i - 1], aircraft['coordinates'][i] ]);
 			}
 			features.push({
 				type : "Feature",
@@ -111,9 +114,9 @@ router.get('/geo.json', function(req, res, next) {
 			type : "Feature",
 			geometry : {
 				type : "Point",
-				coordinates : flight['coordinates'][flight['coordinates'].length - 1]
+				coordinates : aircraft['coordinates'][aircraft['coordinates'].length - 1]
 			},
-			properties : flight['properties']
+			properties : aircraft['properties']
 		});
 	}
 	res.json({
@@ -147,7 +150,7 @@ router.get('/heatmap.json', function(req, res, next) {
 });
 
 // Update every 60 seconds
-var schedule = later.parse.recur().every(5).second();
-later.setInterval(update_flights_cache, schedule);
+var schedule = later.parse.recur().every(1).second();
+later.setInterval(update_aircrafts_cache, schedule);
 
 module.exports = router;
