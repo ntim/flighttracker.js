@@ -31,7 +31,7 @@ $(document).on(
 					});
 					heatmap.addFeatures(features);
 				});
-				setTimeout(update, 5000);
+				setTimeout(update, 1000);
 			}
 
 			var style = {
@@ -101,20 +101,24 @@ $(document).on(
 				});
 				if (features.length > 0) {
 					var feature = features[0];
-					$("#name").text(feature.get('name'));
-					$("#callsign").text(feature.get('callsign'));
-					$("#alt").text(feature.get('alt'));
-					$("#sqw").text(feature.get('sqw'));
-					if (feature.get('dist') != undefined) {
-						$("#dist").text(feature.get('dist') + " km");
+					$("#name").text(feature.get('flight'));
+					$("#squawk").text(feature.get('squawk'));
+					if(feature.get('altitude') != undefined) {
+						$("#altitude").text(feature.get('altitude') + " feet");
+					}
+					if(feature.get('speed') != undefined) {
+						$("#speed").text(feature.get('speed') + " mph");
+					}
+					if (feature.get('distance') != undefined) {
+						$("#distance").text(feature.get('distance') + " km");
 					}
 					document.getElementById('map').style.cursor = 'pointer';
 				} else {
 					$("#name").text("-");
-					$("#callsign").text("-");
-					$("#alt").text("-");
-					$("#sqw").text("-");
-					$("#dist").text("-");
+					$("#squawk").text("-");
+					$("#altitude").text("-");
+					$("#speed").text("-");
+					$("#distance").text("-");
 					document.getElementById('map').style.cursor = '';
 				}
 			};
