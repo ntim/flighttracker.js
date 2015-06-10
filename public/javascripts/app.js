@@ -29,6 +29,11 @@ $(document).on(
 					var features = geojsonFormat.readFeatures(response, {
 						featureProjection : 'EPSG:3857'
 					});
+					// Increase contrast.
+					features.map(function(e) {
+						e.set('weight', Math.sqrt(e.get('weight')));
+						return e;
+					});
 					heatmap.addFeatures(features);
 				});
 				setTimeout(update, 5000);
@@ -72,7 +77,9 @@ $(document).on(
 			var heatmapLayer = new ol.layer.Heatmap({
 				source : heatmap,
 				// opacity : 0.2,
-				visible : false
+				visible : false,
+				radius: 24,
+				blur: 24
 			});
 			var geoLayer = new ol.layer.Vector({
 				source : geojson,
